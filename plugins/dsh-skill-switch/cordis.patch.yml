@@ -1,0 +1,6 @@
+# Bundle patch for dsh-skill-switch.
+# Layered after the base plugins and before the profile-level cordis.patch.yml.
+- insert:
+    - id: skill-switch
+      name: dsh-skill-switch
+      config: {}
