@@ -136,6 +136,13 @@ eq(foreignRequires, [], "client.js only requires 'react'")
 
 check(/dsw-alias-/.test(clientSource), 'client.js style uses --dsw-alias-* tokens')
 
+/* 中文注释：只渲染在本机 UI，不写进 SKILL.md / 模型目录 */
+check(clientSource.includes('const SKILL_NOTES'), 'client.js carries the local-only Chinese notes map')
+check(clientSource.includes("'code-review':"), 'Chinese notes map covers built-in user skills')
+check(clientSource.includes("'office-docx':"), 'Chinese notes map covers bundled office skills')
+check(clientSource.includes('data-ss-zh'), 'client.js renders the Chinese note line in rows')
+check(!/disable-model-invocation/.test(clientSource), 'client.js never touches skill frontmatter')
+
 /* ─────────────────────────── 5. 假运行时 ─────────────────────────── */
 
 let fetchCalls = 0

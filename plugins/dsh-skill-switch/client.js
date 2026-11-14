@@ -26,6 +26,49 @@ window.__ModuleLoader__.load({
     const LOCALE_NS = 'skillSwitch'
     const STYLE_ATTR = 'dsh-skill-switch'
 
+    /* ────────────────── 中文注释（只给本机 UI 看，不进模型目录） ──────────────────
+     * 这些说明只渲染在「技能开关」页面/会话面板里；不写进任何 SKILL.md，
+     * 也不会进入技能的 description/正文，所以模型既看不到、也读不到。
+     * key = 技能名；未收录的技能不显示注释（页面照常工作）。
+     * ─────────────────────────────────────────────────────────────── */
+    const SKILL_NOTES = {
+      'code-review': '从固定基点审改动：仓库规范（Standards）与需求符合度（Spec）双轴并行。',
+      'diagnosing-bugs': '难 bug / 性能回归的诊断循环：复现 → 定位 → 验证修复。',
+      'tdd': '测试驱动开发：先红、再绿、后重构，含集成测试。',
+      'improve-codebase-architecture': '扫描代码库找「可加深模块」的改造机会，产出可视化报告。',
+      'codebase-design': '深模块设计的共享词汇：模块接口、seam、可测性与可导航性。',
+      'domain-modeling': '打磨领域模型：术语表 GLOSSARY.md、ADR 与边界讨论。',
+      'prototype': '写一次性原型回答设计问题，验证状态模型或 UI 方向。',
+      'grilling': '就一个计划 / 决策 / 想法连续追问，往死里拷问。',
+      'grill-me': '轻量高压面试：只提问打磨，不产出文档。',
+      'grill-with-docs': '高压面试 + 把决策落成 ADR 和术语表。',
+      'implement': '按 spec 或一组 ticket 实现一块工作。',
+      'implement-spec': '实现 /to-spec 与 /to-tickets 的产物，走完整 spec 流程。',
+      'to-spec': '把当前对话综合成 spec 并发布到 issue tracker（不做访谈）。',
+      'to-tickets': '把 plan/spec 拆成 tracer-bullet 票，声明阻塞边并发布。',
+      'pr': '写 PR 正文：背景、改动、验证、风险。',
+      'triage': 'issue / 外部 PR 的分诊状态机：分类、验证、必要时 grill、写 brief。',
+      'wayfinder': '把超大会话容量的工作规划成 issue tracker 上的决策票地图。',
+      'setup-matt-pocock-skills': '一次性仓库配置：issue tracker、triage 标签、文档布局。',
+      'handoff': '把当前会话压成交接文档，让另一个 agent / 新会话接手。',
+      'retro': '对一次编码会话做回顾：做对什么、卡在哪、下次怎么改。',
+      'wait-what': '明确要求重讲：刚才那段没让我理解 / 没落地。',
+      'ask-matt': '技能路由器：根据当前处境告诉你该用哪个技能 / 流程。',
+      'teach': '在当前工作区里结合项目内容教你一个新技能 / 概念。',
+      'research': '查高可信一手来源，把结论写成仓库 Markdown 调研文档。',
+      'writing-for-agents': '写「给 agent 看」的文档：skill、AGENTS.md、CLAUDE.md。',
+      'to-questionnaire': '把无法自答的决策转成问卷，交给别人填。',
+      'wizard': '生成交互式 bash 向导，带人走只有人能做的步骤。',
+      'office': 'Office / PDF 总入口：先选对工作流，再进具体子技能。',
+      'office-docx': 'Word 文档（.docx）的创建、读取、编辑与校验。',
+      'office-xlsx': 'Excel 工作簿（.xlsx）的读取、创建、编辑与公式校验。',
+      'office-pptx': 'PowerPoint（.pptx）的创建、读取、编辑与校验。',
+      'office-render': '用 LibreOffice Kit 渲染文档图像、检查视觉排版。',
+      'office-recalculate': '刷新电子表格公式缓存并核对计算值。',
+      'office-export-pdf': '把 Office 文档转换成指定 PDF。',
+    }
+    const noteOf = (name) => SKILL_NOTES[String(name || '')] || ''
+
     /* ────────────────────────── 文案字典 ──────────────────────────
      * 与 locale/zh.json、locale/en.json 逐字一致（selfcheck-client 会比对），
      * 因为 client bundle 不能读 JSON 文件，只能内联一份。
@@ -167,6 +210,8 @@ window.__ModuleLoader__.load({
 [data-ss-name-text]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 [data-ss-note]{font-size:11px;line-height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   color:var(--dsw-alias-label-tertiary,#9aa0a6);}
+[data-ss-zh]{margin-top:1px;font-size:11px;line-height:16px;
+  color:var(--dsw-alias-label-secondary,#b8bbc0);overflow-wrap:anywhere;}
 [data-ss-path]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:16px;
   color:var(--dsw-alias-label-secondary,#b8bbc0);}
@@ -526,7 +571,8 @@ window.__ModuleLoader__.load({
           ? skills.filter((skill) => {
             const name = String((skill && skill.name) || '').toLowerCase()
             const description = String((skill && skill.description) || '').toLowerCase()
-            return name.indexOf(needle) !== -1 || description.indexOf(needle) !== -1
+            const zh = noteOf(skill && skill.name).toLowerCase()
+            return name.indexOf(needle) !== -1 || description.indexOf(needle) !== -1 || zh.indexOf(needle) !== -1
           })
           : skills
         const disabledCount = skills.reduce((count, skill) => (
@@ -541,6 +587,7 @@ window.__ModuleLoader__.load({
           const reason = skill && skill.reason
           const badge = badgeOf(reason)
           const source = String((skill && skill.source) || 'unknown')
+          const zh = noteOf(skill && skill.name)
           return h('div', {
             'data-ss-row': '',
             'data-ss-dock-row': '',
@@ -557,6 +604,7 @@ window.__ModuleLoader__.load({
                   ? h('span', { 'data-ss-badge': '', 'data-tone': 'warn' }, t('missingSkill'))
                   : null
               ),
+              zh ? h('div', { 'data-ss-zh': '' }, zh) : null,
               h('div', { 'data-ss-sub': '' },
                 h('span', { 'data-ss-badge': '', 'data-tone': 'none' }, source),
                 h('span', { 'data-ss-state': '' }, on ? t('enabled') : t('disabled'))
@@ -752,7 +800,8 @@ window.__ModuleLoader__.load({
               ),
               skill && skill.description
                 ? h('div', { 'data-ss-note': '' }, String(skill.description))
-                : null
+                : null,
+              noteOf(name) ? h('div', { 'data-ss-zh': '' }, noteOf(name)) : null
             ),
             h(Switch, {
               on: on,
