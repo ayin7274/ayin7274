@@ -19,7 +19,8 @@
     "icon.svg",
     "lib",
     "locale",
-    "README.md"
+    "README.md",
+    "USAGE.md"
   ],
   "engines": {
     "node": ">=22"
